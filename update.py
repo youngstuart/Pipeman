@@ -69,6 +69,8 @@ def download(src):
      
     return tempFile
 
+
+
 def install(src, dst):
     """unpacks zip file to destination.
 
@@ -80,13 +82,17 @@ def install(src, dst):
     :rtype: str
     """
     zipName = os.path.splitext(src)[0]
-    zip = ZipFile(src)
-    zip.extractall(zipName)
-    unzipped_files = os.path.join(zipName, 'Pipeman-master')
-    print('Unpack Successful: {0}'.format(unzipped_files))
+    with closing(ZipFile(src)) as zip:
+        zip.extractall(zipName)
+        unzipped_files = os.path.join(zipName, 'Pipeman-master')
+        print('Unpack Successful: {0}'.format(unzipped_files))
 
-    du.copy_tree(unzipped_files, dst)
-    print('Copy successful: {0}'.format(dst))
+        du.copy_tree(unzipped_files, dst)
+        print('Copy successful: {0}'.format(dst))
+
+    #clean up temp folder
+    os.remove(src)
+    uninstall(zipName)
 
 def onMayaDroppedPythonFile(obj):
     src = 'https://github.com/youngstuart/Pipeman/archive/master.zip'
