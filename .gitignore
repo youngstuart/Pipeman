@@ -2,3 +2,4 @@ __pycache__
 doc/*.*
 doc/Makefile
 doc/_build/doctrees/
+*.pyc
