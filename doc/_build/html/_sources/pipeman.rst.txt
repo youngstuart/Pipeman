@@ -1,0 +1,7 @@
+*Pipeman Updater*
+
+Pipeman Docs
+_____________
+
+.. automodule:: update
+   :members:
