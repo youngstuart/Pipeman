@@ -3,10 +3,11 @@ import platform
 import distutils.dir_util as du
 import sys
 from io import BytesIO
-from urllib.request import urlopen
+import urllib2
+from contextlib import closing
 from zipfile import ZipFile
 try:
-    from maya import mc
+    import maya.cmds as mc
 except:
     pass
 
@@ -48,10 +49,28 @@ def uninstall(src):
         except:
             return False
     else:
-        Return True
+        return True
+
+def download(src):
+    """Downloads file from url to users temp directory
+
+    :param src: Source URL to download from
+    :type src: str
+    :return: Returns file path to downloaded file
+    :rtype: str
+    """
+
+    fileName = src.split('/')[-1]
+    tmp = mc.internalVar(utd=True)
+    tempFile = os.path.join(tmp, fileName)
+    with open(tempFile, 'w') as fileWrite:
+        fileWrite.write(urllib2.urlopen(src).read())
+        print('{0} write successful'.format(tempFile))
+     
+    return tempFile
 
 def install(src, dst):
-    """Downloads and unpacks zip file to destination.
+    """unpacks zip file to destination.
 
     :param src: url to zip file
     :type src: str
@@ -60,13 +79,18 @@ def install(src, dst):
     :return: Returns root path of unpacked files
     :rtype: str
     """
-    with urlopen(src) as zipresp:
-        with ZipFile(BytesIO(zipresp.read())) as zfile:
-            zfile.extractall(dst)
+    zipName = os.path.splitext(src)[0]
+    zip = ZipFile(src)
+    zip.extractall(zipName)
+    unzipped_files = os.path.join(zipName, 'Pipeman-master')
+    print('Unpack Successful: {0}'.format(unzipped_files))
 
+    du.copy_tree(unzipped_files, dst)
+    print('Copy successful: {0}'.format(dst))
 
 def onMayaDroppedPythonFile(obj):
-    src = 'https://github.com/youngstuart/Pipeman/archive/master/zip'
+    src = 'https://github.com/youngstuart/Pipeman/archive/master.zip'
     dst = installPath()
     if uninstall(dst):
-        install(src, dst)
+        zipFile = download(src)
+        install(zipFile, dst)
