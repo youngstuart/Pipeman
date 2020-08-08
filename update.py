@@ -7,31 +7,35 @@ from io import BytesIO
 import urllib2
 from contextlib import closing
 from zipfile import ZipFile
+# Wrapping Maya specific module to prevent Sphinx Importerror
 try:
     import maya.cmds as mc
 except:
     pass
 
-userScriptsDir = mc.internalVar(uad=True)
-def installPath():
-    """Returns installation path in users default maya/scripts location
+userAppDir = mc.internalVar(uad=True)
+def installPath(src):
+    """Returns installation path in default user application directory
 
-    :return: Returns installation path starting from user scripts directory
+    :param src: URL to github public repository zip
+    :type src: str
+    :return: Returns installation path starting from default user application directory
     :rtype: str
     """
-
+    # github zip URL is structured ['https:', '', 'github.com', <account>, <repo>, 'archive', 'master.zip']
+    repoName = src.split('/')[-3]
     if platform.system() == "Darwin":
         #mc.warning("OSX Installation untested...")
-        return os.path.join(userScriptsDir, 'modules', 'Pipeman')
+        return os.path.join(userAppDir, 'modules', repoName)
 
 
     elif platform.system() == "Linux":
         #mc.warning("Linux Installation untested...")
-        return os.path.join(userScriptsDir, 'modules', 'Pipeman')
+        return os.path.join(userAppDir, 'modules', repoName)
 
 
     elif platform.system() == "Windows":
-        return os.path.join(userScriptsDir, 'modules', 'Pipeman')
+        return os.path.join(userAppDir, 'modules', repoName)
 
 
 def uninstall(src):
@@ -80,11 +84,18 @@ def install(src, dst):
     :rtype: str
     """
     modulePath = os.path.dirname(dst)
-    zipName = os.path.splitext(src)[0]
+    assert (os.path.exists(modulePath)) 'Target destination:\n{0}\ndoes not exist'.format(modulePath)
+    # zipDst = zip file path without .zip extension
+    zipDst = os.path.splitext(src)[0]
+    zipName = os.path.basename(zipDst)
+    modName = '{0}.mod'.format(zipName.split('-'))
     with closing(ZipFile(src)) as zip:
-        zip.extractall(zipName)
-        unzipped_files = os.path.join(zipName, 'Pipeman-master')
-        mod_file = os.path.join(unzipped_files, 'src', 'Pipeman.mod')
+        # extract to same directory as zip file with same name as file
+        zip.extractall(zipDst)
+        # github zip files are structured as:
+        # repo-master.zip > repo-master > contents
+        unzipped_files = os.path.join(zipDst, zipName)
+        mod_file = os.path.join(unzipped_files, 'src', modName)
         print('Unpack Successful: {0}'.format(unzipped_files))
 
         du.copy_tree(unzipped_files, dst)
@@ -94,11 +105,18 @@ def install(src, dst):
 
     #clean up temp folder
     os.remove(src)
-    uninstall(zipName)
+    uninstall(zipDst)
 
 def onMayaDroppedPythonFile(obj):
+    """Special Maya function, not much information on it.  Maya tries to run this function when a .py file is dropped on the viewport
+
+    :param obj: Unknown parameter Maya passes
+    :returns: None
+    :rtype: null
+    """
+
     src = 'https://github.com/youngstuart/Pipeman/archive/master.zip'
-    dst = installPath()
+    dst = installPath(src)
     if uninstall(dst):
         zipFile = download(src)
         install(zipFile, dst)
