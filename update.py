@@ -11,7 +11,7 @@ try:
 except:
     pass
 
-userScriptsDir = mc.internalVar(usd=True)
+userScriptsDir = mc.internalVar(uad=True)
 def installPath():
     """Returns installation path in users default maya/scripts location
 
@@ -21,16 +21,16 @@ def installPath():
 
     if platform.system() == "Darwin":
         #mc.warning("OSX Installation untested...")
-        return os.path.join(userScriptsDir, 'Pipeman')
+        return os.path.join(userScriptsDir, 'modules', 'Pipeman')
 
 
     elif platform.system() == "Linux":
         #mc.warning("Linux Installation untested...")
-        return os.path.join(userScriptsDir, 'Pipeman')
+        return os.path.join(userScriptsDir, 'modules', 'Pipeman')
 
 
     elif platform.system() == "Windows":
-        return os.path.join(userScriptsDir, 'Pipeman')
+        return os.path.join(userScriptsDir, 'modules', 'Pipeman')
 
 
 def uninstall(src):
@@ -67,19 +67,6 @@ def download(src):
         print('{0} write successful'.format(tempFile))
      
     return tempFile
-
-def editUserSetup():
-    userSetup = os.path.join(userScriptsDir, 'userSetup.py')
-
-    
-    with open(userSetup, 'a') as usWrite:
-        usWrite.write(
-            """
-            import maya.cmds as mc
-            import Pipeman.src.shelfMake as shelfMake
-            mc.evalDeferred("shelfMake.customShelf()")
-            """
-        )
 
 def install(src, dst):
     """unpacks zip file to destination.
