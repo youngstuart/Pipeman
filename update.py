@@ -11,14 +11,13 @@ try:
 except:
     pass
 
-
+userScriptsDir = mc.internalVar(usd=True)
 def installPath():
     """Returns installation path in users default maya/scripts location
 
     :return: Returns installation path starting from user scripts directory
     :rtype: str
     """
-    userScriptsDir = mc.internalVar(usd=True)
 
     if platform.system() == "Darwin":
         #mc.warning("OSX Installation untested...")
@@ -69,7 +68,18 @@ def download(src):
      
     return tempFile
 
+def editUserSetup():
+    userSetup = os.path.join(userScriptsDir, 'userSetup.py')
 
+    
+    with open(userSetup, 'a') as usWrite:
+        usWrite.write(
+            """
+            import maya.cmds as mc
+            import Pipeman.src.shelfMake as shelfMake
+            mc.evalDeferred("shelfMake.customShelf()")
+            """
+        )
 
 def install(src, dst):
     """unpacks zip file to destination.
@@ -89,6 +99,7 @@ def install(src, dst):
 
         du.copy_tree(unzipped_files, dst)
         print('Copy successful: {0}'.format(dst))
+
 
     #clean up temp folder
     os.remove(src)

@@ -18,4 +18,4 @@ class customShelf(_shelf):
         self.addMenuItem(sub, "subMenuLevel1Item2")
         self.addMenuItem(p, "popupMenuItem3")
         self.addButon("button3")
-customShelf()
+#customShelf()
