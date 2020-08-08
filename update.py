@@ -1,6 +1,7 @@
 import os
 import platform
 import distutils.dir_util as du
+import distutils.file_util as fu
 import sys
 from io import BytesIO
 import urllib2
@@ -78,13 +79,16 @@ def install(src, dst):
     :return: Returns root path of unpacked files
     :rtype: str
     """
+    modulePath = os.path.dirname(dst)
     zipName = os.path.splitext(src)[0]
     with closing(ZipFile(src)) as zip:
         zip.extractall(zipName)
         unzipped_files = os.path.join(zipName, 'Pipeman-master')
+        mod_file = os.path.join(unzipped_files, 'src', 'Pipeman.mod')
         print('Unpack Successful: {0}'.format(unzipped_files))
 
         du.copy_tree(unzipped_files, dst)
+        fu.copy_file(mod_file, modulePath)
         print('Copy successful: {0}'.format(dst))
 
 
